@@ -31,10 +31,21 @@ const FAMILY_ASSETS: Record<string, FontNamespace> = {
   "Geist Mono": GeistMono,
 };
 
+// Display's WEIGHT_MAP (300/500/700) + RN's default body weight (400) — these are
+// the only weights any primitive in lib/primitives/* can ever request. Italics
+// aren't exposed by any primitive prop, so they're dropped entirely. Metro does
+// NOT tree-shake through `import * as <Family>` namespace imports, so all
+// weights are still in the bundle; this filter only reduces what gets registered
+// with expo-font's useFonts call at runtime. Real bundle-size wins would require
+// named imports per weight per family.
+const NEEDED_WEIGHTS = new Set(["300", "400", "500", "700"]);
+
 function extractFontAssets(ns: FontNamespace): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [key, value] of Object.entries(ns)) {
-    if (typeof value === "number") out[key] = value;
+    if (typeof value !== "number") continue;
+    const match = /_(\d+)[A-Za-z]+$/.exec(key);
+    if (match && NEEDED_WEIGHTS.has(match[1])) out[key] = value;
   }
   return out;
 }
