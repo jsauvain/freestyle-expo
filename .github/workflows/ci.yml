@@ -21,6 +21,9 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      - name: Lint
+        run: npx expo lint
+
       - name: Build web export
         run: npx expo export --platform web
 
